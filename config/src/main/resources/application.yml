@@ -1,0 +1,20 @@
+
+server:
+  port: 9001
+spring:
+  application:
+    name: zhaowei-config
+  cloud:
+    config:
+      server:
+        encrypt:
+          enabled: true
+#        native:
+#          search-locations: file:D:\\
+        git:
+          uri: git@github.com:zwsuper007/zhaowei-config.git
+          username: 15051433642@163.com
+          password: 10271028zw
+          search-paths: zhaowei-config/${spring.profiles.active}
+  profiles:
+    active: dev

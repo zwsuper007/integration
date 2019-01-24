@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhaowei.mapper.UserLoginMapper">
+	<resultMap type="SysUser" id="UserLoginResultMap">
+		<result column="user_id" property="user_id" />
+		<result column="job_no" property="job_no" />
+		<result column="staff_name" property="staff_name" />
+		<result column="staff_duty" property="staff_duty" />
+		<result column="staff_sex" property="staff_sex" />
+		<result column="staff_email" property="staff_email" />
+		<result column="staff_phone" property="staff_phone" />
+		
+		<result column="login_name" property="login_name" />
+		<result column="password" property="password" />
+		<result column="p_salt" property="p_salt" />
+		<result column="is_admin" property="is_admin" />
+		<result column="account_state" property="account_state" />
+		<result column="login_time" property="login_time" />
+		<result column="logout_time" property="logout_time" />
+
+		<result property="createUser" column="create_user" />
+		<result property="createTime" column="create_time" />
+		<result property="updateUser" column="update_user" />
+		<result property="updateTime" column="update_time" />
+		<result property="state" column="state" />
+		<result property="memo" column="memo" />
+		<result property="belongDeptId" column="belong_dept_id" />
+		<result property="belongLesseeId" column="belong_lessee_id" />
+
+		<association property="dept" column="dept_id" javaType="Dept">
+			<result property="dept_id" column="pre_dept_id" />
+		</association>
+		<collection property="listRole" column="role_id" ofType="Role">
+			<result property="role_id" column="pre_role_id" />
+			<result property="role_name" column="pre_role_name" />
+		</collection>
+	</resultMap>
+
+	<select id="getUserByName" resultMap="UserLoginResultMap"
+		parameterType="java.lang.String">
+		SELECT u.*,u.staff_name as pre_staff_name,u.dept_id as pre_dept_id FROM
+		s_user u WHERE [s_user.u] and u.login_name
+		= #{loginName} AND u.state=1 LIMIT 1
+	</select>
+
+	<select id="getUserInfoByName" resultMap="UserLoginResultMap"
+		parameterType="java.lang.String">
+		SELECT u.belong_lessee_id,u.staff_name,u.dept_id AS
+		pre_dept_id ,r.role_id AS pre_role_id,r.role_name AS pre_role_name,
+		u.user_id,u.account_state
+		FROM s_user u
+		LEFT JOIN r_user_role rur ON u.user_id=rur.user_id
+		LEFT JOIN s_role r ON r.role_id=rur.role_id AND r.state=1 
+		WHERE u.login_name = #{login_name} AND u.state=1 
+		ORDER BY r.role_id
+	</select>
+
+	<update id="updateUser" parameterType="SysUser">
+		update s_user
+		<set>
+		    <if test="account_state != null" >account_state = #{account_state},</if>
+			<if test="password != null">password = #{password},</if>
+			<if test="p_salt != null">p_salt = #{p_salt},</if>
+			<if test="updateUser != null">update_user = #{updateUser},</if>
+			<if test="updateTime != null">update_time = #{updateTime},</if>
+		</set>
+		where login_name = #{login_name} and state=1
+	</update>
+
+</mapper>

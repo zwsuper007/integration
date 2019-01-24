@@ -1,0 +1,21 @@
+
+spring:
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: zhaowei
+    password: 10271028zw
+    listener:
+      simple:
+        retry:
+          max-attempts: 5
+          enabled: true
+          initial-interval: 5000
+        default-requeue-rejected: false
+
+info:
+  app:
+    name: "@project.name@"
+    description: "@project.description@"
+    version: "@project.version@"
+    spring-boot-version: "@project.parent.version@"

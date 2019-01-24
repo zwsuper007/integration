@@ -1,0 +1,15 @@
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://provider:provider-mytian0818@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: zuul8083
+  server:
+    enable-self-preservation: false
+server:
+  port: 8083
+spring:
+  application:
+    name: zuul

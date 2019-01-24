@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhaowei.mapper.SystemDeptMapper">
+	<resultMap id="DeptResultMap" type="Dept">
+		<result property="dept_id" column="dept_id" />
+		<result property="dept_full_name" column="dept_full_name" />
+		<result property="dept_name" column="dept_name" />
+		<result property="dept_code" column="dept_code" />
+		<result property="dept_addr" column="dept_addr" />
+		<result property="dept_linkman" column="dept_linkman" />
+		<result property="dept_linkman_phone" column="dept_linkman_phone" />
+		<result property="dept_linkman_email" column="dept_linkman_email" />
+		<result property="hasChild" column="hasChild" />
+		<result property="d_level" column="d_level" />
+
+		<result property="createUser" column="create_user" />
+		<result property="createTime" column="create_time" />
+		<result property="updateUser" column="update_user" />
+		<result property="updateTime" column="update_time" />
+		<result property="state" column="state" />
+		<result property="memo" column="memo" />
+		<result property="belongDeptId" column="belong_dept_id" />
+		<result property="belongLesseeId" column="belong_lessee_id" />
+
+		<association property="pre_dept" column="dept_id" javaType="Dept">
+			<result property="dept_id" column="pre_dept_id" />
+			<result property="dept_name" column="pre_dept_name" />
+		</association>
+	</resultMap>
+
+	<select id="query" resultMap="DeptResultMap">
+		select d1.*,IFNULL(d2.dept_id,'0') as pre_dept_id,d2.dept_name as
+		pre_dept_name from s_dept d1 left join s_dept d2 on
+		d1.pre_id=d2.dept_id
+		where d1.state=1 and [s_dept.d1] ORDER BY d1.create_time ASC
+	</select>
+	
+	<select id="queryAll" resultMap="DeptResultMap">
+		select * from s_dept where state=1 and dept_id!="00000000000000010000000000000000" order by d_level asc
+	</select>
+	
+	<select id="queryBusiness" resultMap="DeptResultMap">
+		select * from s_dept where state=1 and d_level=0 and dept_id!="00000000000000010000000000000000"
+	</select>
+
+	<insert id="add" parameterType="Dept">
+		[Interceptor] insert into s_dept
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="dept_id != null">dept_id,</if>
+			<if test="dept_full_name != null">dept_full_name,</if>
+			<if test="dept_name != null">dept_name,</if>
+			<if test="dept_code != null">dept_code,</if>
+			<if test="dept_addr != null">dept_addr,</if>
+			<if test="dept_linkman != null">dept_linkman,</if>
+			<if test="dept_linkman_phone != null">dept_linkman_phone,</if>
+			<if test="dept_linkman_email != null">dept_linkman_email,</if>
+			<if test="pre_dept.dept_id != null">pre_id,</if>
+			<if test="hasChild != null">hasChild,</if>
+			<if test="d_level != null">d_level,</if>
+			<if test="createUser != null">create_user,</if>
+			<if test="createTime != null">create_time,</if>
+			<if test="updateUser != null">update_user,</if>
+			<if test="updateTime != null">update_time,</if>
+			<if test="state != null">state,</if>
+			<if test="memo != null">memo,</if>
+			<if test="belongDeptId != null">belong_dept_id,</if>
+			<if test="belongLesseeId != null">belong_lessee_id,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="dept_id != null">#{dept_id},</if>
+			<if test="dept_full_name != null">#{dept_full_name},</if>
+			<if test="dept_name != null">#{dept_name},</if>
+			<if test="dept_code != null">#{dept_code},</if>
+			<if test="dept_addr != null">#{dept_addr},</if>
+			<if test="dept_linkman != null">#{dept_linkman},</if>
+			<if test="dept_linkman_phone != null">#{dept_linkman_phone},</if>
+			<if test="dept_linkman_email != null">#{dept_linkman_email},</if>
+			<if test="pre_dept.dept_id != null">#{pre_dept.dept_id},</if>
+			<if test="hasChild != null">#{hasChild},</if>
+			<if test="d_level != null">#{d_level},</if>
+			<if test="createUser != null">#{createUser},</if>
+			<if test="createTime != null">#{createTime},</if>
+			<if test="updateUser != null">#{updateUser},</if>
+			<if test="updateTime != null">#{updateTime},</if>
+			<if test="state != null">#{state},</if>
+			<if test="memo != null">#{memo},</if>
+			<if test="belongDeptId != null">#{belongDeptId},</if>
+			<if test="belongLesseeId != null">#{belongLesseeId},</if>
+		</trim>
+	</insert>
+
+	<select id="insertDeptRedundancy" statementType="CALLABLE"
+		parameterType="java.util.Map">
+	<![CDATA[
+	    {call insertDeptRedundancy (#{v_id,mode=IN,jdbcType=VARCHAR},#{v_pre_id,mode=IN,jdbcType=VARCHAR},#{v_out,mode=OUT,jdbcType=INTEGER})}
+	]]>
+	</select>
+
+	<select id="checkName" resultType="java.lang.Integer"
+		parameterType="Dept">
+		select count(*) from s_dept
+		<where>
+			<if test="dept_id != null">dept_id <![CDATA[<>]]>
+				#{dept_id}
+			</if>
+			and pre_id = #{pre_dept.dept_id} and dept_name=#{dept_name} and
+			state=1 and [s_dept.s_dept]
+		</where>
+	</select>
+
+	<select id="queryByID" parameterType="java.lang.String"
+		resultMap="DeptResultMap">
+		select d1.*,IFNULL(d2.dept_id,'0') as pre_dept_id,d2.dept_name as
+		pre_dept_name from s_dept d1 left join s_dept d2 on
+		d1.pre_id=d2.dept_id
+		where d1.state=1 and d1.dept_id = #{dept_id} and [s_dept.d1] and [islessee]
+	</select>
+	
+	<select id="myQueryByID" parameterType="java.lang.String"
+		resultMap="DeptResultMap">
+		[Interceptor] select d1.*,IFNULL(d2.dept_id,'0') as pre_dept_id,d2.dept_name as
+		pre_dept_name from s_dept d1 left join s_dept d2 on
+		d1.pre_id=d2.dept_id
+		where d1.state=1 and d1.dept_id = #{dept_id}
+		<!-- select * from s_dept where state=1 and dept_id = #{dept_id} -->
+
+	</select>
+
+	<update id="edit" parameterType="Dept">
+		[Interceptor] update s_dept
+		<set>
+			<if test="dept_full_name != null">dept_full_name =
+				#{dept_full_name},</if>
+			<if test="dept_name != null">dept_name = #{dept_name},</if>
+			<if test="dept_code != null">dept_code = #{dept_code},</if>
+			<if test="dept_addr != null">dept_addr = #{dept_addr},</if>
+			<if test="dept_linkman != null">dept_linkman = #{dept_linkman},
+			</if>
+			<if test="dept_linkman_phone != null">dept_linkman_phone =
+				#{dept_linkman_phone},</if>
+			<if test="dept_linkman_email != null">dept_linkman_email =
+				#{dept_linkman_email},</if>
+
+			<if test="memo != null">memo = #{memo},</if>
+			<if test="updateUser != null">update_user = #{updateUser},</if>
+			<if test="updateTime != null">update_time = #{updateTime},</if>
+		</set>
+		where dept_id = #{dept_id}
+	</update>
+
+	<select id="queryOrgRootInfo" resultType="Dept">
+		select d.* from s_dept d,t_lessee_info l where d.state=1 and l.state=1 and
+		l.belong_org_id=d.dept_id and [s_dept.d,t_lessee_info.l] ORDER BY
+		d.create_time ASC
+	</select>
+
+	<select id="querySubDeptByID" resultType="java.lang.String">
+		SELECT rdr.dept_id FROM r_dept_redundancy rdr WHERE
+		rdr.dept_pre_id=#{dept_id}
+	</select>
+	
+	<select id="queryByCode" parameterType="java.lang.String"
+		resultMap="DeptResultMap">
+		[Interceptor] SELECT * FROM s_dept WHERE dept_code=#{dept_code} and state=1
+	</select>
+	<select id="checkByDeptCode" parameterType="java.lang.String"
+		resultType="java.lang.Integer">
+		[Interceptor] SELECT count(*) FROM s_dept WHERE dept_code=#{dept_code} and state=1
+	</select>
+
+	<delete id="deleteRedundancy" parameterType="java.lang.String">
+		delete from r_dept_redundancy where dept_pre_id=#{dept_id} or
+		dept_id=#{dept_id}
+	</delete>
+
+	<update id="delete" parameterType="Dept">
+		[Interceptor] update s_dept
+		<set>
+			<if test="state != null">state = #{state},</if>
+			<if test="updateUser != null">update_user = #{updateUser},</if>
+			<if test="updateTime != null">update_time = #{updateTime},</if>
+		</set>
+		where dept_id = #{dept_id}
+	</update>
+
+	<select id="checkForData" resultType="java.lang.Integer">
+		select count(*) from r_auth_data_dept where dept_id=#{dept_id} and state=1
+	</select>
+
+</mapper>

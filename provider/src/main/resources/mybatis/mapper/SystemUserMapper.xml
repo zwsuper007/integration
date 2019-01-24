@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhaowei.mapper.SystemUserMapper">
+	<resultMap type="SysUser" id="SysUserResultMap">
+		<result column="user_id" property="user_id" />
+        <result column="job_no" property="job_no" />
+        <result column="staff_name" property="staff_name" />
+        <result column="staff_duty" property="staff_duty" />
+        <result column="staff_sex" property="staff_sex" />
+        <result column="staff_email" property="staff_email" />
+        <result column="staff_phone" property="staff_phone" />
+        
+        <result column="login_name" property="login_name" />
+        <result column="password" property="password" />
+        <result column="p_salt" property="p_salt" />
+        <result column="is_admin" property="is_admin" />
+        <result column="account_state" property="account_state" />
+        <result column="login_time" property="login_time" />
+        <result column="logout_time" property="logout_time" />
+
+        <result property="createUser" column="create_user" />
+        <result property="createTime" column="create_time" />
+        <result property="updateUser" column="update_user" />
+        <result property="updateTime" column="update_time" />
+        <result property="state" column="state" />
+        <result property="memo" column="memo" />
+        <result property="belongDeptId" column="belong_dept_id" />
+        <result property="belongLesseeId" column="belong_lessee_id" />
+
+        <association property="dept" column="dept_id" javaType="Dept">
+            <result property="dept_id" column="pre_dept_id" />
+            <result property="dept_name" column="pre_dept_name" />
+        </association>
+	</resultMap>
+	
+	<select id="query" parameterType="SysUser" resultMap="SysUserResultMap">
+        select u.*,d.dept_id AS pre_dept_id,d.dept_name AS pre_dept_name
+        from s_user u left join s_dept d on u.dept_id=d.dept_id   
+        <where>
+          <if test="dept.dept_id != null">
+            u.dept_id = #{dept.dept_id} and
+          </if>
+          <if test="staff_name != null and staff_name != ''">
+            u.staff_name like '%${staff_name}%' and
+          </if>
+           [s_user.u,s_dept.d] and d.state=1 AND u.state=1 <!-- AND u.is_admin=0 -->
+        </where>  
+        <if test="sortSql == null or sortSql == ''">
+            ORDER BY create_time desc
+        </if>
+        <if test="sortSql != null and sortSql != ''">
+            order by ${sortSql}
+        </if>
+    </select>
+    
+    <select id="queryById" parameterType="java.lang.String" resultMap="SysUserResultMap">      
+        <!-- select u.*,d.dept_id AS pre_dept_id,d.dept_name AS pre_dept_name from s_user u, s_dept d where u.state=1 AND [s_user.u] AND u.dept_id=d.dept_id AND u.user_id=#{userId} -->
+        select * from s_user where state=1 AND user_id=#{userId}
+    </select>
+	
+	<select id="queryByBelongDeptId" parameterType="java.lang.String" resultMap="SysUserResultMap">      
+        [Interceptor] select * from s_user where belong_dept_id=#{belongDeptId} and state=1
+    </select>
+    
+	<select id="queryByDeptId" parameterType="java.lang.String" resultType="java.lang.String">	    
+  		SELECT IFNULL(l.login_url,'') as login_url FROM s_dept AS d, t_lessee_info AS l WHERE l.id=d.belong_lessee_id AND l.state=1 AND d.state=1 AND d.dept_id = #{deptId}
+	</select>
+	
+	<select id="checkLoginName" resultType="java.lang.Integer" parameterType="java.lang.String">
+    	select count(*) from s_user where login_name = #{login_name} and state=1 and [s_user.s_user]
+    </select>
+    
+    <select id="queryUserByDeptID" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(*) from s_user where dept_id = #{dept_id} and state=1 and [s_user.s_user]
+    </select>
+    
+    <insert id="add" parameterType="SysUser" >
+		[Interceptor] insert into s_user
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		  <if test="user_id != null" >user_id,</if>
+		  <if test="dept.dept_id != null" >dept_id,</if>
+		  <if test="job_no != null" >job_no,</if>
+          <if test="staff_name != null" >staff_name,</if>
+          <if test="staff_duty != null" >staff_duty,</if>
+          <if test="staff_sex != null" >staff_sex,</if>
+          <if test="staff_email != null" >staff_email,</if>
+          <if test="staff_phone != null" >staff_phone,</if>
+          
+		  <if test="login_name != null" >login_name,</if>
+		  <if test="password != null" >password,</if>
+		  <if test="p_salt != null" >p_salt,</if>
+		  <if test="is_admin != null" >is_admin,</if>
+		  <if test="account_state != null" >account_state,</if>
+		  <if test="login_time != null" >login_time,</if>
+		  <if test="logout_time != null" >logout_time,</if>
+		  
+		  <if test="createUser != null" >create_user,</if>
+		  <if test="createTime != null" >create_time,</if>
+		  <if test="updateUser != null" >update_user,</if>
+		  <if test="updateTime != null" >update_time,</if>
+		  <if test="state != null" >state,</if>
+		  <if test="memo != null" >memo,</if>
+		  <if test="belongDeptId != null" >belong_dept_id,</if>
+		  <if test="belongLesseeId != null" >belong_lessee_id,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+		  <if test="user_id != null" >#{user_id},</if>
+		  <if test="dept.dept_id != null" >#{dept.dept_id},</if>
+		  <if test="job_no != null" >#{job_no},</if>
+          <if test="staff_name != null" >#{staff_name},</if>
+          <if test="staff_duty != null" >#{staff_duty},</if>
+          <if test="staff_sex != null" >#{staff_sex},</if>
+          <if test="staff_email != null" >#{staff_email},</if>
+          <if test="staff_phone != null" >#{staff_phone},</if>
+		  
+		  <if test="login_name != null" >#{login_name},</if>
+		  <if test="password != null" >#{password},</if>
+		  <if test="p_salt != null" >#{p_salt},</if>
+		  <if test="is_admin != null" >#{is_admin},</if>
+		  <if test="account_state != null" >#{account_state},</if>
+		  <if test="login_time != null" >#{login_time},</if>
+		  <if test="logout_time != null" >#{logout_time},</if>
+		  
+		  <if test="createUser != null" >#{createUser},</if>
+		  <if test="createTime != null" >#{createTime},</if>
+		  <if test="updateUser != null" >#{updateUser},</if>
+		  <if test="updateTime != null" >#{updateTime},</if>
+		  <if test="state != null" >#{state},</if>
+		  <if test="memo != null" >#{memo},</if>
+		  <if test="belongDeptId != null" >#{belongDeptId},</if>
+		  <if test="belongLesseeId != null" >#{belongLesseeId},</if>
+		</trim>
+	</insert>
+	
+	<update id="edit" parameterType="SysUser" >
+	    [Interceptor] update s_user
+	    <set>
+	     <if test="job_no != null" >job_no = #{job_no},</if>
+         <if test="staff_name != null" >staff_name = #{staff_name},</if>
+         <if test="staff_duty != null" >staff_duty = #{staff_duty},</if>
+         <if test="staff_sex != null" >staff_sex = #{staff_sex},</if>
+         <if test="staff_email != null" >staff_email = #{staff_email},</if>
+         <if test="staff_phone != null" >staff_phone = #{staff_phone},</if>
+         
+	     <if test="memo != null" >memo = #{memo},</if>
+	     <if test="updateUser != null" >update_user = #{updateUser},</if>
+	     <if test="updateTime != null" >update_time = #{updateTime},</if>
+	    </set>
+	    where user_id = #{user_id}
+	</update>
+	
+	<update id="resetPassword" parameterType="SysUser" >
+	    update s_user u
+	    <set>
+	     <if test="account_state != null" >u.account_state = #{account_state},</if>
+	     <if test="password != null" >u.password = #{password},</if>
+	     <if test="p_salt != null" >u.p_salt = #{p_salt},</if>
+	     <if test="updateUser != null" >u.update_user = #{updateUser},</if>
+	     <if test="updateTime != null" >u.update_time = #{updateTime},</if>
+	    </set>
+	    where u.user_id = #{user_id}
+	</update>
+	
+	<update id="accountState" parameterType="SysUser" >
+        update s_user u
+        <set>
+         <if test="account_state != null" >u.account_state = #{account_state},</if>
+         <if test="updateUser != null" >u.update_user = #{updateUser},</if>
+         <if test="updateTime != null" >u.update_time = #{updateTime},</if>
+        </set>
+        where u.user_id = #{user_id}
+    </update>
+	
+	<insert id="addUserRole">
+	    INSERT INTO r_user_role (user_id,role_id)  
+	    VALUES   
+	    <foreach collection="list" item="item" index="index" separator="," >  
+	        (#{user_id},#{item})  
+	    </foreach>  
+	</insert>
+	
+	<select id="getChooseRole" resultType="java.lang.String" parameterType="java.lang.String">
+    	select role_id from r_user_role where user_id = #{user_id}
+    </select>
+    
+    <delete id="deleteUserRoleByUserId" parameterType="java.lang.String" >
+		delete from r_user_role
+		<where>
+		user_id = #{user_id}
+		</where>
+	</delete>
+	
+	<delete id="deleteUserRole" parameterType="java.lang.String" >
+		delete from r_user_role
+		<where>
+		user_id = #{user_id}
+		</where>
+	</delete>	
+    
+    <update id="delete" parameterType="java.lang.Integer" >
+	    [Interceptor] update s_user
+	    <set >
+	      <if test="state != null" >state = #{state},</if>
+	      <if test="updateUser != null" >update_user = #{updateUser},</if>
+	      <if test="updateTime != null" >update_time = #{updateTime},</if>
+	    </set>
+	    where user_id = #{user_id} and state=1
+	</update>
+	
+	<select id="selectUserByLoginName" parameterType="java.lang.String" resultMap="SysUserResultMap">      
+        [Interceptor] select * from s_user where state=1 AND login_name=#{username}
+    </select>
+
+</mapper>
